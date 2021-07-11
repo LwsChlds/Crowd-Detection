@@ -4,9 +4,9 @@ The pytoch model being used is an adapted version of [CrowdCounting on VisDrone2
 
 ### Running the code
 
-Install requirement.txt and Python 3.8
+Install [requirement.txt](requirement.txt) and Python 3.8
 
-To execute use:
+To execute from the src file use:
   
     python main.py args
     
