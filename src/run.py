@@ -35,6 +35,13 @@ def run_model(model_fun, dataset, batch_size, n_workers, callbacks):
 
             input = input.to('cpu')
             predictions = predictions.to('cpu')
+            '''
+            # Loads values from a txt file to test the output of the deepstream model with a heatmap
+            predictions = (numpy.loadtxt('data.txt', dtype=float))
+            predictions = predictions[numpy.newaxis, ...]
+            predictions = predictions[numpy.newaxis, ...]
+            predictions = torch.from_numpy(predictions)
+            '''
             for i in range(input.shape[0]):
                 for callback in callbacks:
                     callback(input[i], predictions[i], other[i])
