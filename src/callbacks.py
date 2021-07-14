@@ -27,9 +27,6 @@ def count_callback(input, prediction, name):
     """
     prints the counting predicted
     """
-    # print("Prediciton = " + str(prediction.squeeze()).item())
-    # print("Prediciton = " + str(prediction.squeeze()))
-    # print("Prediciton = " + str(torch.sum(prediction.squeeze()).item()))
     print(str(name) + ' Count: ' + str(np.round(torch.sum(prediction.squeeze()).item() / cfg_data.LOG_PARA)))
 
 
