@@ -6,6 +6,7 @@ from models.CC import CrowdCounter
 from dataset.visdrone import cfg_data
 from dataset.run_datasets import make_dataset
 from run import run_model, run_transforms
+from runOther import load_txt_outputs, run_onnx_model
 from config import cfg
 import numpy as np
 import torch
@@ -21,7 +22,7 @@ def load_CC_test():
     return cc
 
 
-def run_net(in_file, callbacks):
+def run_net(in_file, callbacks, model):
     """
     Run the model on a given file or folder
 
@@ -32,10 +33,18 @@ def run_net(in_file, callbacks):
 
     transforms = run_transforms(cfg_data.MEAN, cfg_data.STD, cfg_data.SIZE)
     dataset.set_transforms(transforms)
-
     callbacks_list = [(call_dict[call] if type(call) == str else call) for call in callbacks]
 
-    run_model(load_CC_test, dataset, cfg.TEST_BATCH_SIZE, cfg.N_WORKERS, callbacks_list)
+    if model is None:
+        run_model(load_CC_test, dataset, cfg.TEST_BATCH_SIZE, cfg.N_WORKERS, callbacks_list)
+    elif model.endswith('.onnx'):
+        run_onnx_model(dataset,cfg.TEST_BATCH_SIZE, cfg.N_WORKERS, callbacks_list, model)
+    elif model.endswith('.txt'):
+        load_txt_outputs(dataset, cfg.TEST_BATCH_SIZE, cfg.N_WORKERS, callbacks_list, model)
+    else:
+        print("Model input type is not recognised")
+        print("Either use a '.onnx' or '.txt' file")
+
 
 def create_onnx():
     """
@@ -46,11 +55,11 @@ def create_onnx():
     model = load_CC_test()
     model.eval()
     print("Creating random input values...")
-    x = torch.randn(10, 3, 255, 255, device='cuda')
+    x = torch.randn(1, 3, 540, 960, device='cuda')
     input_names = [ "actual_input_1" ] + [ "learned_%d" % i for i in range(16) ]
     output_names = [ "output1" ]
     print("Exporting model to onnx...")
-    torch.onnx.export(model, x, "DroneCrowd110.onnx", verbose=True, input_names=input_names, output_names=output_names, opset_version=11)
+    torch.onnx.export(model, x, "DroneCrowd11-540x9602.onnx", verbose=True, input_names=input_names, output_names=output_names, opset_version=11, export_params=True)
     print("Model created succesfully!")
 
 
@@ -66,6 +75,8 @@ if __name__ == '__main__':
     parser.add_argument('--path', type=str, help='in run mode, the input file or folder to be processed')
     parser.add_argument('--callbacks', type=str,
                         help='List of callbacks, they can be [\'save_callback\', \'count_callback\']')
+    parser.add_argument('--model', type=str, 
+                        help='in run mode, to test a different model to the pyTorch model. Either an onnx file to be run in onnxruntime or a txt file of output values')
     args = parser.parse_args()
 
     if args.callbacks is not None:
@@ -73,6 +84,6 @@ if __name__ == '__main__':
     else:
         callbacks = []
     if args.mode == 'run':
-        run_net(args.path, callbacks)
+        run_net(args.path, callbacks, args.model)
     elif args.mode == 'onnx':
         create_onnx()
