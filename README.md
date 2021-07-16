@@ -19,9 +19,24 @@ For run mode, you must also specify:
 <li>--callbacks: list of callback function to be executed after the forward of each element</li>
 </ul>
 
-For example to count the amount of pedestrians on the test image use:
+To run/test other models use
+
+<ul>
+<li>--model: path to the onnx or txt file of output values
+</ul>
+
+For example:
+To count the amount of pedestrians on the test image using the pyTorch model use:
 
     python main.py run --path crowd.jpg --callbacks [\'count_callback\']
+    
+To save a heatmap of the amount of pedestrians on the test image using onnxruntime use:
+    
+    python main.py run --path crowd.jpg --callbacks [\'save_callback\'] --model DroneCrowd11-540x960.onnx
+    
+To test a different models output (stored in numpy.savetxt) by being shown all information produced from the test image use:
+    
+    python main.py run --path crowd.jpg --callbacks [\'display_callback\'] --model values.txt
 
 To create the onnx model use:
 
