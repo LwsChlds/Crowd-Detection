@@ -1,0 +1,10 @@
+[properties]
+Length = 960
+Height = 540
+Box_Size = 5
+numBoxes = 100
+detection_value = 0.001
+coverage = 0.4
+maxGroups = 200
+dataFile = onnxData_105.txt
+IMG_name = image.jpg
