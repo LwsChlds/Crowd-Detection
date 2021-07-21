@@ -3,24 +3,24 @@ import matplotlib.pyplot as plt
 import configparser
 
 
-
-
 # Default values
-Length = 960
-Height = 540
-Box_Size = 5
-numBoxes = 100
-detection_value = 0.001
-coverage = 0.4
-maxGroups = 200
-dataFile = 'onnxData_105.txt'
-IMG_name = "image.jpg"
+Length = 960 # the amount of pixels the input/output length contains
+Height = 540 # the amount of pixels the input/output height contains
+Box_Size = 5 # the amount of pixels each area the image is split into will contain
+numBoxes = 100 # the number of boxes that a group has to contain to be recognised as a crowd
+detection_value = 0.001 # the certanty each pixel has to be to seen as a person
+coverage = 0.4 # the % area of a box that has to be detected as a person 
+maxGroups = 200 # the max number of groups the system can handle
+dataFile = 'onnxData_105.txt' # the input data values
+IMG_name = "image.jpg" # the output image name
 
 # Reading from a config file
 config = configparser.ConfigParser()
 
 config.read('config.txt')
 
+# if the values are present in the config file read from file
+# if they are not present it uses the system default values instead
 if config.get('properties', 'Length', fallback=0) != 0:
     Length = int(config.get('properties', 'Length'))
 if config.get('properties', 'Height', fallback=0) != 0:
@@ -48,16 +48,25 @@ RGB_black = (0., 0., 0.)
 
 prediction = (np.loadtxt(dataFile, dtype=float))
 
-# Arrays used in the file
+# Arrays used in the file:
+
+# stores the RGB values of each pixel in the image
+pixels = [[RGB_white for y in range(Length)] for x in range(Height)] 
+
+# stores what group each box is in
+boxes = [[-1 for y in range(int(Length / Box_Size))] for x in range(int(Height / Box_Size))] 
+
+# stores the estimated number of pedestrians in each box 
+values = [[-1 for y in range(int(Length / Box_Size))] for x in range(int(Height / Box_Size))] 
+
+# stores the number of boxes in each grouping of boxes
 groups = [0 for rows in range(maxGroups)]
+
+# sotres the estimated number of pedestrians in each grouping
 groupVal = [0 for rows in range(maxGroups)]
-pixels = [[RGB_white for y in range(Length)] for x in range(Height)]
-boxes = [[-1 for y in range(int(Length / Box_Size))] for x in range(int(Height / Box_Size))]
-values = [[-1 for y in range(int(Length / Box_Size))] for x in range(int(Height / Box_Size))]
 
 
-
-
+# a recursive function used to chain together any groups of boxes that are next to eachother
 def checkADJ(i, j, numCells):
     if j > 0:
         if boxes[i][j - 1] == 0:
@@ -101,7 +110,7 @@ def checkADJ(i, j, numCells):
             numCells += checkADJ(i - 1, j, numCells) - numCells
     return numCells
 
-
+# looping over each box's individal pixels to see if it contains enough certanty of pedestrians to be recognised
 for j in range(int(Length / Box_Size)):
     for i in range(int(Height / Box_Size)):
         sumPedestrians = 0
@@ -115,6 +124,7 @@ for j in range(int(Length / Box_Size)):
         if numDetectedPixels / (Box_Size * Box_Size) > coverage:
             boxes[i][j] = 0
 
+# looping over each box to chain adjacent boxes of pedestrians together 
 for b in range(int(Length / Box_Size)):
     for a in range(int(Height / Box_Size)):
         if boxes[a][b] == 0:
@@ -122,6 +132,7 @@ for b in range(int(Length / Box_Size)):
             boxes[a][b] = groupingNum
             groups[groupingNum] = checkADJ(a, b, 0)
 
+        # if there are enough boxes together it is recognised as a crowd and drawn onto the image
         if groups[boxes[a][b]] > numBoxes:
             groupVal[boxes[a][b]] += values[a][b]
             for c in range(Box_Size):
@@ -138,16 +149,16 @@ for b in range(int(Length / Box_Size)):
                     if boxes[a][b - 1] != boxes[a][b]:
                         pixels[a * Box_Size + c][b * Box_Size] = RGB_black
 
+# any large enough group has it's estimated pedestrian count printed
 for g in range(maxGroups):
     if groupVal[g] > 0:
         print("Group " + str(g) + " = " + str(groupVal[g]))
 
+# print the pixels RBJ values onto an image 
 outputIMG = np.asarray(pixels)
-
+plt.figure(figsize=(int(Length/100),int(Height/100)))
 plt.gca().set_axis_off()
 plt.subplots_adjust(top=1, bottom=0, right=1, left=0,
                     hspace=0, wspace=0)
-plt.margins(0, 0)
-
 plt.imshow(outputIMG)
 plt.savefig(IMG_name)
