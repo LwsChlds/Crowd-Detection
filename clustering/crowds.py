@@ -1,17 +1,44 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import configparser
 
 
-# Changable values
-Box_Size = 5
+
+
+# Default values
 Length = 960
 Height = 540
+Box_Size = 5
 numBoxes = 100
 detection_value = 0.001
 coverage = 0.4
 maxGroups = 200
 dataFile = 'onnxData_105.txt'
 IMG_name = "image.jpg"
+
+# Reading from a config file
+config = configparser.ConfigParser()
+
+config.read('config.txt')
+
+if config.get('properties', 'Length', fallback=0) != 0:
+    Length = int(config.get('properties', 'Length'))
+if config.get('properties', 'Height', fallback=0) != 0:
+    Height = int(config.get('properties', 'Height'))
+if config.get('properties', 'Box_Size', fallback=0) != 0:
+    Box_Size = int(config.get('properties', 'Box_Size'))
+if config.get('properties', 'numBoxes', fallback=0) != 0:
+    numBoxes = int(config.get('properties', 'numBoxes'))
+if config.get('properties', 'detection_value', fallback=0) != 0:
+    detection_value = float(config.get('properties', 'detection_value'))
+if config.get('properties', 'coverage', fallback=0) != 0:
+    coverage = float(config.get('properties', 'coverage'))
+if config.get('properties', 'maxGroups', fallback=0) != 0:
+    maxGroups = int(config.get('properties', 'maxGroups'))
+if config.get('properties', 'dataFile', fallback=0) != 0:
+    dataFile = config.get('properties', 'dataFile')
+if config.get('properties', 'IMG_name', fallback=0) != 0:
+    IMG_name = config.get('properties', 'IMG_name')
 
 # Set variables
 LOG_PARA = 2550.0
@@ -124,5 +151,3 @@ plt.margins(0, 0)
 
 plt.imshow(outputIMG)
 plt.savefig(IMG_name)
-
-
