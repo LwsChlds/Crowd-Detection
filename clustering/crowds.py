@@ -2,7 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import configparser
 
-
 # Default values
 Length = 960 # the amount of pixels the input/output length contains
 Height = 540 # the amount of pixels the input/output height contains
@@ -45,6 +44,7 @@ LOG_PARA = 2550.0
 groupingNum = 0
 RGB_white = (1., 1., 1.)
 RGB_black = (0., 0., 0.)
+RGB_red = (1., 0., 0.)
 
 prediction = (np.loadtxt(dataFile, dtype=float))
 
@@ -133,6 +133,25 @@ for b in range(int(Length / Box_Size)):
             groups[groupingNum] = checkADJ(a, b, 0)
 
         # if there are enough boxes together it is recognised as a crowd and drawn onto the image
+
+        # detects smaller groups in red
+        if groups[boxes[a][b]] > numBoxes/4:
+            groupVal[boxes[a][b]] += values[a][b]
+            for c in range(Box_Size):
+                if a < int(Height / Box_Size) - 1:
+                    if boxes[a + 1][b] != boxes[a][b]:
+                        pixels[a * Box_Size + Box_Size - 1][b * Box_Size + c] = RGB_red
+                if a > 0:
+                    if boxes[a - 1][b] != boxes[a][b]:
+                        pixels[a * Box_Size][b * Box_Size + c] = RGB_red
+                if b < int(Length / Box_Size) - 1:
+                    if boxes[a][b + 1] != boxes[a][b]:
+                        pixels[a * Box_Size + c][b * Box_Size + Box_Size - 1] = RGB_red
+                if b > 0:
+                    if boxes[a][b - 1] != boxes[a][b]:
+                        pixels[a * Box_Size + c][b * Box_Size] = RGB_red
+
+        # detects larger groups in black
         if groups[boxes[a][b]] > numBoxes:
             groupVal[boxes[a][b]] += values[a][b]
             for c in range(Box_Size):
@@ -148,6 +167,8 @@ for b in range(int(Length / Box_Size)):
                 if b > 0:
                     if boxes[a][b - 1] != boxes[a][b]:
                         pixels[a * Box_Size + c][b * Box_Size] = RGB_black
+
+
 
 # any large enough group has it's estimated pedestrian count printed
 for g in range(maxGroups):
