@@ -4,8 +4,8 @@ import configparser
 
 def preprocess(inputIMG, config):
   
-    MEAN = [0.43476477, 0.44504763, 0.43252817]
-    STD = [0.20490805, 0.19712372, 0.20312176]
+    MEAN = np.array([0.43476477, 0.44504763, 0.43252817])
+    STD = np.array([0.20490805, 0.19712372, 0.20312176])
 
     Length = 960 # the amount of pixels the input/output length contains
     Height = 540 # the amount of pixels the input/output height contains
@@ -17,8 +17,7 @@ def preprocess(inputIMG, config):
     if config.get('properties', 'Height', fallback=0) != 0:
         Height = int(config.get('properties', 'Height'))
 
-    normalised = np.full(shape=(3, Height, Length), fill_value=128.0)
-
+    ordered = np.full(shape=(3, Height, Length), fill_value=128.0)
     # resizing the image whilst keeping original proportions
     basewidth = Length
     img = Image.open(inputIMG)
@@ -29,16 +28,8 @@ def preprocess(inputIMG, config):
     array = np.array(img)
 
     # preprocessing data
-    for height in range(540):
-        for width in range(960):
-            for RGB in range(3):
-                value = array[height][width][RGB]
-                value = value + 3.75
-                value = value/255
-                value = value - MEAN[RGB]
-                normalised[RGB][height][width] = (value/STD[RGB])
+    array = (((array + 3.75)/255) - MEAN[None, None, :]) / STD[None, None, :]
+    ordered = np.moveaxis(array, -1, 0)
+    ordered = ordered[np.newaxis, ...]
 
-    # getting the array into the (1, 3, Height, Length) shape
-    normalised = normalised[np.newaxis, ...]
-
-    return normalised
+    return ordered
