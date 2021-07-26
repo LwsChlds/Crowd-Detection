@@ -1,0 +1,11 @@
+[properties]
+Length = 960
+Height = 540
+Box_Size = 5
+numBoxes = 100
+detection_value = 0.001
+coverage = 0.4
+maxGroups = 200
+inputIMG = img105032.jpg
+outputIMG = out.jpg
+onnx = DroneCrowd11-540x960.onnx
