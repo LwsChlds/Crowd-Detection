@@ -1,6 +1,5 @@
 import numpy as np
 from PIL import Image
-import configparser
 
 def preprocess(inputIMG, Height, Length):
   
