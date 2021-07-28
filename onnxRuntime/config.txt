@@ -9,3 +9,5 @@ maxGroups = 200
 inputIMG = example.jpg
 outputIMG = out.jpg
 onnx = DroneCrowd11-540x960.onnx
+epsilon = 20
+min_samples = 500
