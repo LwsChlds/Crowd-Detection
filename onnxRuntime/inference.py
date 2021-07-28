@@ -1,9 +1,7 @@
 import numpy as np
 import preprocessing as pre
 import dbscan as post
-from PIL import Image
 import onnxruntime as rt
-import json
 import configparser
 
 config = configparser.ConfigParser()
@@ -45,12 +43,12 @@ print("Preprocessing data")
 normalised = pre.preprocess(inputIMG, Height, Length)
 
 # running onnxRuntime
-data = json.dumps({'data': (normalised).tolist()})
-data = np.array(json.loads(data)['data']).astype('float32')
 print("Running onnxRuntime")
 session = rt.InferenceSession(onnx, None)
 input_name = session.get_inputs()[0].name
 output_name = session.get_outputs()[0].name
-result = session.run([output_name], {input_name: data})
+result = session.run([output_name], {input_name: normalised.astype(np.float32)})
 print("Postprocessing data")
-post.postprocess(np.array(result)[0][0][0], epsilon=epsilon, min_samples=min_samples, outputIMG=outputIMG)
+detection, labels = post.postprocess(np.array(result)[0][0][0], epsilon=epsilon, min_samples=min_samples)
+print("Saving detection in " + outputIMG)
+post.saveIMG(detection, labels, outputIMG=outputIMG)
