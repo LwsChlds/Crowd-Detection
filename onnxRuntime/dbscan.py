@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def postprocess(prediction, epsilon, min_samples, outputIMG):
+def postprocess(prediction, epsilon, min_samples):
     LOG_PARA = 2550.0
     # store the x and y values of the pixels where a person is detected
     y_Axis, x_Axis = (np.where((prediction / LOG_PARA) > 0.001))
@@ -31,9 +31,13 @@ def postprocess(prediction, epsilon, min_samples, outputIMG):
 
     print('Estimated no. of clusters: %d' % no_clusters)
     print('Estimated no. of noise points: %d' % no_noise)
-    
-    # Generate scatter plot for training data
-    colors = list(map(lambda x: '#000000' if x == -1 else '#b40426', labels))
+
+    return detection, labels
+
+def saveIMG(detection, labels, outputIMG):
+    # Generate scatter plot
+    colour_list = np.array(['green', 'blue', 'red', 'yellow',  'orange',  'magenta', 'cyan', 'purple', 'black'])
+
     plt.scatter(detection[:,1], detection[:,0], c=colour_list[labels], marker="o", picker=True)
     plt.title(f'Crowd detection')
     plt.xlabel('Axis X[0]')
@@ -44,8 +48,8 @@ def postprocess(prediction, epsilon, min_samples, outputIMG):
 
 def main():
     prediction = (np.loadtxt("img105001.txt", dtype=float))
-    outputIMG = "crowdClusters.jpg"
-    postprocess(prediction, epsilon=20, min_samples=500, outputIMG="crowdClusters.jpg")
+    detection, labels = postprocess(prediction, epsilon=20, min_samples=500)
+    saveIMG(detection, labels, outputIMG="crowdClusters.jpg")
 
 
 if __name__ == "__main__":
