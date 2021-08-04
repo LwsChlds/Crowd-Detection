@@ -1,13 +1,12 @@
 [properties]
 Length = 960
 Height = 540
-Box_Size = 5
-numBoxes = 100
-detection_value = 0.001
-coverage = 0.4
-maxGroups = 200
-inputIMG = example.jpg
-outputIMG = out.jpg
+outputIMG = out
 onnx = DroneCrowd11-540x960.onnx
-epsilon = 20
-min_samples = 500
+epsilon = 50
+min_samples = 1500
+mediaIn = walkingCrowd.mp4
+outputFile = output
+interval = 1
+outputTF = 1
+onnxEngine = DroneCrowd11-540x960.onnx_b1_gpu0_fp16.engine
