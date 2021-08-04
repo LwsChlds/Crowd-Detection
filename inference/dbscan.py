@@ -8,7 +8,9 @@ def postprocess(prediction, epsilon, min_samples):
     # store the x and y values of the pixels where a person is detected
     y_Axis, x_Axis = (np.where((prediction / LOG_PARA) > 0.001))
     detection = np.array(list(map(lambda i: [y_Axis[i],x_Axis[i]], range(len(y_Axis)))))
-    print(np.shape(detection))
+    if str(np.shape(detection)) == '(0,)':
+        print("No detection was found in the image")
+        return None, None
 
     # Compute DBSCAN
     db = DBSCAN(eps=epsilon, min_samples=min_samples).fit(detection)
@@ -28,11 +30,13 @@ def postprocess(prediction, epsilon, min_samples):
     # print the values for each grouping
     for i in range(no_clusters):
         print(str(i) + " = " + str(np.sum(np.array(labels) == i, axis=0)))
-
+    if str(np.shape(detection)) == '(0,)':
+        print("No clusters were found in the detection")
+        return None, None
     print('Estimated no. of clusters: %d' % no_clusters)
-    print('Estimated no. of noise points: %d' % no_noise)
 
     return detection, labels
+
 
 def saveIMG(detection, labels, outputIMG, Length, Height):
     # Generate scatter plot
