@@ -95,7 +95,7 @@ def inference_trt(input, model_path, output, Length, Height, epsilon, min_sample
         out = detect(frame, host_inputs, cuda_inputs, stream, context, bindings, host_outputs, cuda_outputs)
         out = out.reshape((Height, Length))
         detection, labels = post.postprocess(out, epsilon=epsilon, min_samples=min_samples)
-        if (outputTF):
+        if (outputTF and detection is not None and labels is not None):
             post.saveIMG(detection, labels, output)
     else:
         print("Running from a video input on every " + str(interval) + " frames")
@@ -110,11 +110,11 @@ def inference_trt(input, model_path, output, Length, Height, epsilon, min_sample
                     frame = pre.preprocess(frame, Height, Length)
                     out = detect(frame, host_inputs, cuda_inputs, stream, context, bindings, host_outputs, cuda_outputs)
                     out = out.reshape((Height, Length))
-                    print(np.shape(out))
                     detection, labels = post.postprocess(out, epsilon=epsilon, min_samples=min_samples)
-                    if (outputTF):
+                    if (outputTF and detection is not None and labels is not None):
                         if outputFile != None:
                             post.saveIMG(detection, labels, str(outputFile + "/" + output + str(int(frameNr/interval)) + ".jpg"), Length, Height)
+                           # post.saveIMG(detection, labels, str(outputFile + "/" + output + str(epsilon) + str(min_samples) + ".jpg"), Length, Height)
                         else:
                             post.saveIMG(detection, labels, str(output + str(int(frameNr/interval))), Length, Height)
  
