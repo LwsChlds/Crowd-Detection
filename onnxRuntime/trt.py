@@ -64,6 +64,7 @@ def inference_trt(input, model_path, output, Length, Height, epsilon, min_sample
     :param output: (str) File path of the output image.
     :param label: (str) Path of the labels file.
     """
+    print("Opening onnx engine into trt...")
     trt_logger = trt.Logger(trt.Logger.INFO)
     # load plugins
     trt.init_libnvinfer_plugins(trt_logger, '')
@@ -76,8 +77,10 @@ def inference_trt(input, model_path, output, Length, Height, epsilon, min_sample
         host_inputs, host_outputs, cuda_inputs, cuda_outputs, bindings, stream = _allocate_buffers(engine)
     except Exception as e:
         raise RuntimeError('fail to allocate CUDA resources') from e
+    print("Starting inference...")
     if input.endswith('.jpg'):
         # Load and pre-process image
+        print("Running from a image input")
         frame = pre.preprocess(input, Height, Length)
         out = detect(frame, host_inputs, cuda_inputs, stream, context, bindings, host_outputs, cuda_outputs)
         out = out.reshape((Height, Length))
@@ -85,6 +88,7 @@ def inference_trt(input, model_path, output, Length, Height, epsilon, min_sample
         if (outputTF):
             post.saveIMG(detection, labels, output)
     else:
+        print("Running from a video input on every " + str(interval) + " frames")
         capture = cv2.VideoCapture(input)
         frameNr = 0
         while (True):
@@ -96,12 +100,13 @@ def inference_trt(input, model_path, output, Length, Height, epsilon, min_sample
                     frame = pre.preprocess(frame, Height, Length)
                     out = detect(frame, host_inputs, cuda_inputs, stream, context, bindings, host_outputs, cuda_outputs)
                     out = out.reshape((Height, Length))
+                    print(np.shape(out))
                     detection, labels = post.postprocess(out, epsilon=epsilon, min_samples=min_samples)
                     if (outputTF):
                         if outputFile != None:
-                            post.saveIMG(detection, labels, outputFile + "/" + output + frameNr/interval)
+                            post.saveIMG(detection, labels, str(outputFile + "/" + output + str(int(frameNr/interval)) + ".jpg"), Length, Height)
                         else:
-                            post.saveIMG(detection, labels, output + frameNr/interval)
+                            post.saveIMG(detection, labels, str(output + str(int(frameNr/interval))), Length, Height)
  
             else:
                 break
@@ -117,6 +122,7 @@ def main():
     """
     config = configparser.ConfigParser()
     config.read('config.txt')
+    print("Loading values from config.txt...")
     if config.get('properties', 'mediaIn', fallback=0) != 0:
         mediaIn = str(config.get('properties', 'mediaIn'))
     else:
@@ -133,12 +139,8 @@ def main():
         outputTF = str(config.get('properties', 'outputTF'))
     else:
         outputTF = 0
-    if config.get('trt', 'onnxEngine', fallback=0) != 0:
-        onnxEngine = str(config.get('trt', 'onnxEngine'))
-    else:
-        print("No onnxEngine was found in the spec file")
-    if config.get('trt', 'onnxEngine', fallback=0) != 0:
-        onnxEngine = str(config.get('trt', 'onnxEngine'))
+    if config.get('properties', 'onnxEngine', fallback=0) != 0:
+        onnxEngine = str(config.get('properties', 'onnxEngine'))
     else:
         print("No onnxEngine was found in the spec file")
     if config.get('properties', 'Length', fallback=0) != 0:
@@ -163,7 +165,7 @@ def main():
         outputFile = None
     
 
-
     inference_trt(mediaIn, onnxEngine, outputIMG, Length, Height, epsilon, min_samples, outputFile, interval, outputTF)
+    print("Completed inference")
 if __name__ == "__main__":
     main()
