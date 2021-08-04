@@ -10,3 +10,4 @@ outputFile = output
 interval = 1
 outputTF = 1
 onnxEngine = DroneCrowd11-540x960.onnx_b1_gpu0_fp16.engine
+inputIMG = example.jpg
