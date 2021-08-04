@@ -17,6 +17,7 @@ import configparser
 # import common modules
 sys.path.append("..")
 
+
 def _allocate_buffers(engine):
     # Determine dimensions and create page-locked memory buffers
     # (i.e. won't be swapped to disk) to hold host inputs/outputs.
@@ -38,6 +39,8 @@ def _allocate_buffers(engine):
     # Create a stream in which to copy inputs/outputs and run inference.
     stream = cuda.Stream()
     return host_inputs, host_outputs, cuda_inputs, cuda_outputs, bindings, stream
+
+
 def detect(frame, host_inputs, cuda_inputs, stream, context, bindings, host_outputs, cuda_outputs):
     # Transfer input data to the GPU.
     np.copyto(host_inputs[0], frame.ravel())
@@ -55,14 +58,21 @@ def detect(frame, host_inputs, cuda_inputs, stream, context, bindings, host_outp
     output = host_outputs[0]
     # Return the host output.
     return output
+
+
 def inference_trt(input, model_path, output, Length, Height, epsilon, min_samples, outputFile, interval, outputTF):
     """
     Function to perform inference and benchmarking
-    :param runs: (int) Number of times to run the inference
-    :param image: (str) File path of the input image.
-    :param model_path: (str) Path of the detection model (tf).
-    :param output: (str) File path of the output image.
-    :param label: (str) Path of the labels file.
+    :param input: (str) the media file to run inference on
+    :param model_path: (str) the onnx engine file
+    :param output: (str) the name of the output image/s
+    :param Length: (int) the number of pixels in the length of the input/outputs
+    :param Height: (int) the number of pixels in the height of the input/outputs
+    :param epsilon: (int) the distance between two points to be considered neighbors 
+    :param min_samples: (int) minimum number of neighbors a given point should have in order to be classified as a core point
+    :param outputFile: (str) the name of the file the image/s should be output into
+    :param interval: (int) the interval of what frames should be processed in a video file
+    :param outputTF: (int) if output heatmap images should be produced or not
     """
     print("Opening onnx engine into trt...")
     trt_logger = trt.Logger(trt.Logger.INFO)
@@ -115,13 +125,15 @@ def inference_trt(input, model_path, output, Length, Height, epsilon, min_sample
  
         capture.release()
         
+        
 def main():
     """
     Main method to run
-    python3 benchmark_jetson_trt.py --model ./trt_model/TRT_ssd_mobilenet_v2_coco.bin --input data/image.jpg
     """
     config = configparser.ConfigParser()
     config.read('config.txt')
+    # if the values are present in the config file read from file
+    # if they are not present it uses the system default values instead if possible or return an error
     print("Loading values from config.txt...")
     if config.get('properties', 'mediaIn', fallback=0) != 0:
         mediaIn = str(config.get('properties', 'mediaIn'))
@@ -163,9 +175,10 @@ def main():
         outputFile = str(config.get('properties', 'outputFile'))
     else:
         outputFile = None
-    
+  
 
     inference_trt(mediaIn, onnxEngine, outputIMG, Length, Height, epsilon, min_samples, outputFile, interval, outputTF)
     print("Completed inference")
+    
 if __name__ == "__main__":
     main()
