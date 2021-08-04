@@ -8,14 +8,14 @@ def postprocess(prediction, epsilon, min_samples):
     # store the x and y values of the pixels where a person is detected
     y_Axis, x_Axis = (np.where((prediction / LOG_PARA) > 0.001))
     detection = np.array(list(map(lambda i: [y_Axis[i],x_Axis[i]], range(len(y_Axis)))))
-
+    print(np.shape(detection))
 
     # Compute DBSCAN
     db = DBSCAN(eps=epsilon, min_samples=min_samples).fit(detection)
     labels = db.labels_
 
     # Generate scatter plot for training data
-    colour_list = np.array(['green', 'blue', 'red', 'yellow',  'orange',  'magenta', 'cyan', 'purple', 'black'])
+    colour_list = np.array(['green', 'blue', 'red', 'yellow',  'orange',  'magenta', 'cyan', 'purple', 'black', 'black', 'black', 'black', 'black', 'black', 'black', 'black', 'black', 'black', 'black', 'black', 'black', 'black', 'black', 'black', 'black', 'black', 'black', 'black', 'black'])
 
     # Remove the noise
     range_max = len(detection)
@@ -27,24 +27,25 @@ def postprocess(prediction, epsilon, min_samples):
 
     # print the values for each grouping
     for i in range(no_clusters):
-        print(colour_list[i] + " = " + str(np.sum(np.array(labels) == i, axis=0)))
+        print(str(i) + " = " + str(np.sum(np.array(labels) == i, axis=0)))
 
     print('Estimated no. of clusters: %d' % no_clusters)
     print('Estimated no. of noise points: %d' % no_noise)
 
     return detection, labels
 
-def saveIMG(detection, labels, outputIMG):
+def saveIMG(detection, labels, outputIMG, Length, Height):
     # Generate scatter plot
-    colour_list = np.array(['green', 'blue', 'red', 'yellow',  'orange',  'magenta', 'cyan', 'purple', 'black'])
-
-    plt.scatter(detection[:,1], detection[:,0], c=colour_list[labels], marker="o", picker=True)
-    plt.title(f'Crowd detection')
-    plt.xlabel('Axis X[0]')
-    plt.ylabel('Axis X[1]')
+    colour_list = np.array(['green', 'blue', 'red', 'yellow',  'orange',  'magenta', 'cyan', 'purple', 'black', 'black', 'black', 'black', 'black', 'black', 'black', 'black', 'black', 'black', 'black', 'black', 'black', 'black', 'black', 'black', 'black', 'black', 'black', 'black', 'black'])
+    plt.scatter(detection[:,1], detection[:,0], c='red', marker="o", picker=True)
+    plt.gca().set_axis_off()
+    plt.subplots_adjust(top=1, bottom=0, right=1, left=0,
+                        hspace=0, wspace=0)
+    plt.xlim(0, 960)
     plt.ylim(540, 0)
 
     plt.savefig(outputIMG)
+    plt.clf()
 
 def main():
     prediction = (np.loadtxt("img105001.txt", dtype=float))
