@@ -106,15 +106,15 @@ def inference_trt(input, model_path, output, Length, Height, epsilon, min_sample
  
             if success:
                 if (frameNr/interval).is_integer():
-                    frame = pre.preprocess(frame, Height, Length)
-                    out = detect(frame, host_inputs, cuda_inputs, stream, context, bindings, host_outputs, cuda_outputs)
+                    pro_frame = pre.preprocess(frame, Height, Length)
+                    out = detect(pro_frame, host_inputs, cuda_inputs, stream, context, bindings, host_outputs, cuda_outputs)
                     out = out.reshape((Height, Length))
                     detection, labels = post.postprocess(out, epsilon=epsilon, min_samples=min_samples)
                     if (outputTF == 1 and detection is not None and labels is not None):
                         if outputFile != None:
-                            post.saveIMG(detection, labels, str(outputFile + "/" + output + str(int(frameNr/interval)) + ".jpg"), Length, Height)
+                            post.saveIMG(detection, labels, str(outputFile + "/" + output + str(int(frameNr/interval)) + ".jpg"), Length, Height, frame, overlay)
                         else:
-                            post.saveIMG(detection, labels, str(output + str(int(frameNr/interval))), Length, Height)
+                            post.saveIMG(detection, labels, str(output + str(int(frameNr/interval))), Length, Height, frame, overlay)
  
             else:
                 break
@@ -146,7 +146,7 @@ def main():
     else:
         interval = 10
     if config.get('properties', 'outputTF', fallback=0) != 0:
-        outputTF = str(config.get('properties', 'outputTF'))
+        outputTF = int(config.get('properties', 'outputTF'))
     else:
         outputTF = 0
     if config.get('properties', 'onnxEngine', fallback=0) != 0:
@@ -173,6 +173,10 @@ def main():
         outputFile = str(config.get('properties', 'outputFile'))
     else:
         outputFile = None
+    if config.get('properties', 'overlay', fallback=0) != 0:
+        overlay = int(config.get('properties', 'overlay'))
+    else:
+        overlay = 0
   
 
     inference_trt(mediaIn, onnxEngine, outputIMG, Length, Height, epsilon, min_samples, outputFile, interval, outputTF)
