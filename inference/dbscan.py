@@ -38,18 +38,26 @@ def postprocess(prediction, epsilon, min_samples):
     return detection, labels
 
 
-def saveIMG(detection, labels, outputIMG, Length, Height):
+def saveIMG(detection, labels, outputIMG, Length, Height, input, overlay):
     # Generate scatter plot
     colour_list = np.array(['green', 'blue', 'red', 'yellow',  'orange',  'magenta', 'cyan', 'purple', 'black', 'black', 'black', 'black', 'black', 'black', 'black', 'black', 'black', 'black', 'black', 'black', 'black', 'black', 'black', 'black', 'black', 'black', 'black', 'black', 'black'])
-    plt.scatter(detection[:,1], detection[:,0], c='red', marker="o", picker=True)
+    plt.imshow(input)
+    if overlay == 1:
+        detection = detection * 4
+        plt.scatter(detection[:,1], detection[:,0], c='red', marker="o", picker=True, s=.01, alpha=0.5)
+        plt.xlim(0, 960*4)
+        plt.ylim(540*4, 0)
+    else:
+        plt.scatter(detection[:,1], detection[:,0], c='red', marker="o", picker=True)
+        plt.xlim(0, 960)
+        plt.ylim(540, 0)
+
     plt.gca().set_axis_off()
     plt.subplots_adjust(top=1, bottom=0, right=1, left=0,
                         hspace=0, wspace=0)
-    plt.xlim(0, 960)
-    plt.ylim(540, 0)
-
     plt.savefig(outputIMG)
     plt.clf()
+
 
 def main():
     prediction = (np.loadtxt("img105001.txt", dtype=float))
