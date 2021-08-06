@@ -19,9 +19,12 @@ If it were to be used in a complete inferencing program, it would be called afte
     
 ## Examples
 
-Using the following image: ![../src/example.jpg](../src/example.jpg)
+Using the following image: 
+
+![../src/example.jpg](../src/example.jpg)
 
 It produces: 
+
 ![](out.jpg)
 
 The accuracy of this can be better seen by overlaying the images:  
