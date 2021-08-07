@@ -11,6 +11,7 @@ import numpy as np
 import pycuda.autoinit  # This is needed for initializing CUDA driver
 import tensorrt as trt
 import pycuda.driver as cuda
+# Import processing, customisation and publishing
 import dbscan as post
 import preprocessing as pre
 import configparser
@@ -74,13 +75,15 @@ def inference_trt(input, model_path, output, Length, Height, epsilon, min_sample
     :param outputFile: (str) the name of the file the image/s should be output into
     :param interval: (int) the interval of what frames should be processed in a video file
     :param outputTF: (int) if output heatmap images should be produced or not
+    :param overlay: (int) if output heatmap should be overlayed onto the original frame
     """
    print("Opening onnx engine into trt...")
     trt_logger = trt.Logger(trt.Logger.INFO)
     # load plugins
     trt.init_libnvinfer_plugins(trt_logger, '')
-    # load_trt_model
+    # open mqtt
     # mqtt = MQTTPublisher()
+    # load_trt_model
     with open(model_path, 'rb') as f, trt.Runtime(trt_logger) as runtime:
         engine = runtime.deserialize_cuda_engine(f.read())
     # allocate CUDA resources for inference
@@ -93,10 +96,20 @@ def inference_trt(input, model_path, output, Length, Height, epsilon, min_sample
     if input.endswith('.jpg'):
         # Load and pre-process image
         print("Running from a image input")
+        # preprocess the image
         frame = pre.preprocess(input, Height, Length)
+        # run the detection
         out = detect(frame, host_inputs, cuda_inputs, stream, context, bindings, host_outputs, cuda_outputs)
+        # make sure the detection is the chosen size for the postprocessing
         out = out.reshape((Height, Length))
+        # run postprocessing on the output and return the results
         detection, labels = post.postprocess(out, epsilon=epsilon, min_samples=min_samples)
+        # sum the estimated size of the crowd for the image
+        sum = 0
+        for i in range(len(np.unique(labels))):
+            sum += int(np.sum(np.array(labels) == i, axis=0))
+        print("Estimated size of crowd = " + str(sum/36))
+        # if a deteciton is found and outputTF is set to 1 save the image
         if (outputTF == 1 and detection is not None and labels is not None):
             post.saveIMG(detection, labels, output, frame, overlay)
     else:
@@ -108,25 +121,35 @@ def inference_trt(input, model_path, output, Length, Height, epsilon, min_sample
         pastVal = np.copy(outputNum, order='K') + 1 
         while (True):
  
+            # open the next frame into an array
             success, frame = capture.read()
  
             if success:
+                # if the frame is in the chosen interval
                 if (frameNr/interval).is_integer():
                     sum = 0
+                    # every 10 readings compare the average of the last 10 readings and display the difference
                     if (frameNr/10).is_integer():
                         arrNum = 0
                         if frameNr > 10:
                             print(str(np.mean(outputNum)/36) + " " + str(float(np.mean(outputNum))/float(np.mean(pastVal))*100) + "%" )
                             # mqtt.publish(str(np.mean(outputNum)/36) + " " + str(float(np.mean(outputNum))/float(np.mean(pastVal))*100) + "%" )
                         pastVal = np.copy(outputNum, order='K') + 1
+                    # preprocess the frame
                     pro_frame = pre.preprocess(frame, Height, Length)
+                    # run the detection
                     out = detect(pro_frame, host_inputs, cuda_inputs, stream, context, bindings, host_outputs, cuda_outputs)
+                    # make sure the detection is the chosen size for the postprocessing
                     out = out.reshape((Height, Length))
+                    # run postprocessing on the output and return the results
                     detection, labels = post.postprocess(out, epsilon=epsilon, min_samples=min_samples)
+                    # sum the estimated size of the crowd for each image
                     for i in range(len(np.unique(labels))):
                         sum += int(np.sum(np.array(labels) == i, axis=0))
+                    # store 10 estimations to be used for a rolling average
                     outputNum[arrNum] = sum
                     
+                    # if a deteciton is found and outputTF is set to 1 save the image
                     if (outputTF == 1 and detection is not None and labels is not None):
                         if outputFile != None:
                             post.saveIMG(detection, labels, str(outputFile + "/" + output + str(int(frameNr/interval)) + ".jpg"), Length, Height, frame, overlay)
