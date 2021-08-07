@@ -14,6 +14,7 @@ import pycuda.driver as cuda
 import dbscan as post
 import preprocessing as pre
 import configparser
+from mqtt import MQTTPublisher
 # import common modules
 sys.path.append("..")
 
@@ -60,7 +61,7 @@ def detect(frame, host_inputs, cuda_inputs, stream, context, bindings, host_outp
     return output
 
 
-def inference_trt(input, model_path, output, Length, Height, epsilon, min_samples, outputFile, interval, outputTF):
+def inference_trt(input, model_path, output, Length, Height, epsilon, min_samples, outputFile, interval, outputTF, overlay):
     """
     Function to perform inference and benchmarking
     :param input: (str) the media file to run inference on
@@ -74,11 +75,12 @@ def inference_trt(input, model_path, output, Length, Height, epsilon, min_sample
     :param interval: (int) the interval of what frames should be processed in a video file
     :param outputTF: (int) if output heatmap images should be produced or not
     """
-    print("Opening onnx engine into trt...")
+   print("Opening onnx engine into trt...")
     trt_logger = trt.Logger(trt.Logger.INFO)
     # load plugins
     trt.init_libnvinfer_plugins(trt_logger, '')
     # load_trt_model
+    # mqtt = MQTTPublisher()
     with open(model_path, 'rb') as f, trt.Runtime(trt_logger) as runtime:
         engine = runtime.deserialize_cuda_engine(f.read())
     # allocate CUDA resources for inference
@@ -87,6 +89,7 @@ def inference_trt(input, model_path, output, Length, Height, epsilon, min_sample
         host_inputs, host_outputs, cuda_inputs, cuda_outputs, bindings, stream = _allocate_buffers(engine)
     except Exception as e:
         raise RuntimeError('fail to allocate CUDA resources') from e
+    print("Starting inference...")
     if input.endswith('.jpg'):
         # Load and pre-process image
         print("Running from a image input")
@@ -95,21 +98,35 @@ def inference_trt(input, model_path, output, Length, Height, epsilon, min_sample
         out = out.reshape((Height, Length))
         detection, labels = post.postprocess(out, epsilon=epsilon, min_samples=min_samples)
         if (outputTF == 1 and detection is not None and labels is not None):
-            post.saveIMG(detection, labels, output)
+            post.saveIMG(detection, labels, output, frame, overlay)
     else:
         print("Running from a video input on every " + str(interval) + " frames")
         capture = cv2.VideoCapture(input)
         frameNr = 0
+        arrNum = 0
+        outputNum = np.full(shape=(10), fill_value=0.0)
+        pastVal = np.copy(outputNum, order='K') + 1 
         while (True):
  
             success, frame = capture.read()
  
             if success:
                 if (frameNr/interval).is_integer():
+                    sum = 0
+                    if (frameNr/10).is_integer():
+                        arrNum = 0
+                        if frameNr > 10:
+                            print(str(np.mean(outputNum)/36) + " " + str(float(np.mean(outputNum))/float(np.mean(pastVal))*100) + "%" )
+                            # mqtt.publish(str(np.mean(outputNum)/36) + " " + str(float(np.mean(outputNum))/float(np.mean(pastVal))*100) + "%" )
+                        pastVal = np.copy(outputNum, order='K') + 1
                     pro_frame = pre.preprocess(frame, Height, Length)
                     out = detect(pro_frame, host_inputs, cuda_inputs, stream, context, bindings, host_outputs, cuda_outputs)
                     out = out.reshape((Height, Length))
                     detection, labels = post.postprocess(out, epsilon=epsilon, min_samples=min_samples)
+                    for i in range(len(np.unique(labels))):
+                        sum += int(np.sum(np.array(labels) == i, axis=0))
+                    outputNum[arrNum] = sum
+                    
                     if (outputTF == 1 and detection is not None and labels is not None):
                         if outputFile != None:
                             post.saveIMG(detection, labels, str(outputFile + "/" + output + str(int(frameNr/interval)) + ".jpg"), Length, Height, frame, overlay)
@@ -118,7 +135,7 @@ def inference_trt(input, model_path, output, Length, Height, epsilon, min_sample
  
             else:
                 break
- 
+            arrNum += 1
             frameNr = frameNr+1
  
         capture.release()
@@ -130,8 +147,6 @@ def main():
     """
     config = configparser.ConfigParser()
     config.read('config.txt')
-    # if the values are present in the config file read from file
-    # if they are not present it uses the system default values instead if possible or return an error
     print("Loading values from config.txt...")
     if config.get('properties', 'mediaIn', fallback=0) != 0:
         mediaIn = str(config.get('properties', 'mediaIn'))
@@ -177,9 +192,9 @@ def main():
         overlay = int(config.get('properties', 'overlay'))
     else:
         overlay = 0
-  
-
-    inference_trt(mediaIn, onnxEngine, outputIMG, Length, Height, epsilon, min_samples, outputFile, interval, outputTF)
+    
+​
+    inference_trt(mediaIn, onnxEngine, outputIMG, Length, Height, epsilon, min_samples, outputFile, interval, outputTF, overlay)
     print("Completed inference")
     
 if __name__ == "__main__":
