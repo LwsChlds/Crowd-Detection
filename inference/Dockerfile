@@ -8,6 +8,7 @@ RUN pip3 install sklearn
 RUN pip3 install matplotlib
 RUN apt-get install -y python3-opencv
 RUN pip3 install configparser
+RUN pip3 install paho-mqtt
 
 ENV LD_PRELOAD=/usr/lib/aarch64-linux-gnu/libgomp.so.1
 
