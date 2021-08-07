@@ -48,14 +48,14 @@ def saveIMG(detection, labels, outputIMG, Length, Height, input, overlay):
         plt.imshow(input)
         detection = detection * 4
         plt.scatter(detection[:,1], detection[:,0], c='red', marker="o", picker=True, s=.01, alpha=0.5)
-        plt.xlim(0, 960*4)
-        plt.ylim(540*4, 0)
+        plt.xlim(0, Length*4)
+        plt.ylim(Height*4, 0)
     # if overlay is not set to 1 print the detection individually with larger markers
     else:
         plt.scatter(detection[:,1], detection[:,0], c='red', marker="o", picker=True)
-        plt.xlim(0, 960)
-        plt.ylim(540, 0)
-​
+        plt.xlim(0, Length)
+        plt.ylim(Height, 0)
+
     plt.gca().set_axis_off()
     plt.subplots_adjust(top=1, bottom=0, right=1, left=0,
                         hspace=0, wspace=0)
