@@ -62,12 +62,3 @@ def saveIMG(detection, labels, outputIMG, Length, Height, input, overlay):
     plt.savefig(outputIMG)
     plt.clf()
 ​
-def main():
-    prediction = (np.loadtxt("img105001.txt", dtype=float))
-    detection, labels = postprocess(prediction, epsilon=20, min_samples=500)
-    saveIMG(detection, labels, outputIMG="crowdClusters.jpg")
-​
-​
-if __name__ == "__main__":
-    main()
-    
