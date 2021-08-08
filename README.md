@@ -3,6 +3,8 @@
 > 
 > Each section is self-contained and has a corresponding README explaining how they work and how to run the code.
 
+![](allMaps.jpg)
+
 ### The final model running in TensorRt
 The [inference file](inference) contains and documents the final method used involving TensorRt and postprocessing using dbscan
 
