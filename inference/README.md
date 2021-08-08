@@ -65,7 +65,7 @@ And config values of:
 * epsilon = 40
 * min_samples = 1500
 * overlay = 0
-* 
+
 It produces: 
 
 ![](inferenceOut.jpg)
