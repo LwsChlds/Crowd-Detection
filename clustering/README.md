@@ -28,4 +28,4 @@ It produces:
 ![](out.jpg)
 
 The accuracy of this can be better seen by overlaying the images:  
-![](comparison.png)
+![](comparison.jpg)
