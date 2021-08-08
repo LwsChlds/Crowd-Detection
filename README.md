@@ -1,44 +1,30 @@
-## Converting pytorch model into the onnx format
+# Using Artificial Intelligence to detect crowds and any changes within them
+> this GitHub documents the different approaches and methods tried along with containing the final method.
+> 
+> Each section is self-contained and has a corresponding README explaining how they work and how to run the code.
 
-The pytoch model being used is an adapted version of [CrowdCounting on VisDrone2020](https://github.com/pasqualedem/CrowdCounting-on-VisDrone2020) created by pasqualedem and uses the [MobileCount](https://github.com/SelinaFelton/MobileCount) models plus 2 two variants of it.
+### The final model running in TensorRt
+The [inference file](inference) contains and documents the final method used involving TensorRt and postprocessing using dbscan
 
-### Running the code
+The majority of changes made moving to this method were done to reduce the inferencing time on each frame.
 
-Install [requirements.txt](requirements.txt) and Python 3.8
+You can find more information on this section [here](inference/README.md)
 
-To execute from the src file use:
-  
-    python main.py args
-    
-The first arg is the modality, can be: run or onnx
+### PyTorch and creating the onnx model
+The [src file](src) contains the original model and how it is run along with the additions made to convert it into the onnx format and testing with onnxRuntime to ensure that the onnx file works as expected.
 
-For run mode, you must also specify:
+You can find more information on this section [here](src/README.md)
 
-<ul>
-<li>--path: path to the video or image file, or the folder containing the image</li>
-<li>--callbacks: list of callback function to be executed after the forward of each element</li>
-</ul>
+### Custom clustering program
+The [clustering file](clustering) contains a custom program written to take the output of the inferencing and return groupings along with accurate headcounts along with a map to display the results.
 
-To run/test other models use
+I dropped this from the end product favouring the dbscan system, which could produce similar results about ten times faster.
 
-<ul>
-<li>--model: path to the onnx or txt file of output values
-</ul>
+You can find more information on this section [here](clustering/README.md)
 
-For example:
-To count the amount of pedestrians on the test image using the pyTorch model use:
+### Unsucessfull attempt using deepstream
+The [deepstream file](deepstream) contains the base code for running the model in NVIDIA deepstream.
 
-    python main.py run --path crowd.jpg --callbacks [\'count_callback\']
-    
-To save a heatmap of the amount of pedestrians on the test image using onnxruntime use:
-    
-    python main.py run --path crowd.jpg --callbacks [\'save_callback\'] --model DroneCrowd11-540x960.onnx
-    
-To test a different models output (stored in numpy.savetxt) by being shown all information produced from the test image use:
-    
-    python main.py run --path crowd.jpg --callbacks [\'display_callback\'] --model values.txt
+However, it was not usable due to an accuracy problem caused by the postprocessing used in deepstream.
 
-To create the onnx model use:
-
-    python main.py onnx
-
+You can find more information on this section [here](deepstream/README.md)
