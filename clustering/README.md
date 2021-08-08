@@ -6,7 +6,7 @@ The detection output of a model is loaded, and for each pixel, if it detects con
 The image is split into a grid of each box size determined by **boxsize**. If over the **coverage**% has a detection, it is recorded as a person/people.
 Finally, the positive boxes are chained together into groups through a recursive search. If the group size is more significant than **numBoxes**, it is drawn onto the image in black, indicating a large group. 
 
-All the **variables** are specified and can be changed in [spec.txt](config.txt)
+All the **variables** are specified and can be changed in [config.txt](config.txt)
 
 ### Running the code
 
