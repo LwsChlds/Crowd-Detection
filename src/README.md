@@ -1,3 +1,6 @@
+## The original pytorch model and converting into onnx
+> The pytoch model being used is an adapted version of [CrowdCounting on VisDrone2020](https://github.com/pasqualedem/CrowdCounting-on-VisDrone2020) created by pasqualedem and uses the [MobileCount](https://github.com/SelinaFelton/MobileCount) models plus 2 two variants of it.
+
 ### Running the code
 
 Install [requirements.txt](requirements.txt) and Python 3.8
