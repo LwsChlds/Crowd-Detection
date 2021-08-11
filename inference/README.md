@@ -1,25 +1,33 @@
 # Inferencing
 
-> Running inference on the model created in [src](../src) through onnxRuntime or Nvidia's TensorRt deep learning 
+> Running inference on the model created in [src](../src) through onnxRuntime or Nvidia's TensorRT deep learning 
 
-## Running using TensorRt
-TensorRt is used to optimise the inferencing for running on an NVIDIA edge computer to be run on-site as fast as possible.
+## Running using TensorRT
+TensorRT is used to optimise model inference throughput on NVIDIA edge computing devices.
 
-You can find the main model code in [trt.py](trt.py) but the [preprocessing](preprocessing.py) and [postprocessing](dbscan.py) are seperated
+You can find the main inference code in [trt.py](trt.py) but the [preprocessing](preprocessing.py) and [postprocessing](dbscan.py) are seperated into modules.
 
-The TensorRt code is run inside a docker container created by the [dockerfile](dockerfile). For example, the docker can be built using:
+The preprocessing follows the same method as the original PyTorch model without the need of using Torchvision. Each input pixel RGB value is put into the following equation:
 
-    sudo docker build . -t jetson_tf
+    y = (((x+ 3.75)/255) - MEAN) / STD
+
+As the mean and STD values are from an array of 3 values corresponding to the three RGB values, this creates channel-wise normalisation.
+
+The post-processing uses dbscan to form clusters of the detected pedestrians to create crowds. You can find more information on dbscan [here](https://scikit-learn.org/stable/modules/generated/sklearn.cluster.DBSCAN.html)
+
+The TensorRT code is run inside a docker container created by the [dockerfile](dockerfile). The docker container can be build using::
+
+    docker build . -t jetson_tf
 
 And then run once using:
 
-    sudo docker run --runtime=nvidia -it -v "$(pwd)":/CrowdDetection jetson_tf
+    docker run --runtime=nvidia -it -v "$(pwd)":/CrowdDetection jetson_tf
 
 Assuming you are running this from the inference file
 
 To open the docker container, use:
 
-    sudo docker run --runtime=nvidia -it -v "$(pwd)":/CrowdDetection jetson_tf /bin/bash
+    docker run --runtime=nvidia -it -v "$(pwd)":/CrowdDetection jetson_tf /bin/bash
 
 All inputs and changeable config values are found in [config.txt](config.txt)
 
@@ -43,12 +51,12 @@ Both methods use the same pre and post-processing, producing the same results fr
 
 The intervals of which it will process frames from a video can be changed by editing **interval**
 
-If a video input is used as the **mediaIn** for TensorRt, it will save outputs inside the chosen **outputFile** with names as **outputIMG**%d where %d is the increasing frame number. These frames can be combined back into a video using FFmpeg.
+If a video input is used as the **mediaIn** for TensorRT, it will save outputs inside the chosen **outputFile** with names as **outputIMG**%d where %d is the increasing frame number. These frames can be combined back into a video using FFmpeg.
 For example, a 30fps video where **outputIMG** was set to **out** the frames are saved into a video called stiched_video.mp4 using:
 
     ffmpeg -framerate 30 -i out%d.jpg -vf "crop=trunc(iw/2)*2:trunc(ih/2)*2" -y ./stiched_video.mp4
     
-To run faster processing producing an output image can be disabled by changing the value of **outputTF** to 0
+To run faster processing, producing an output image can be disabled by changing the value of **outputTF** to 0
 
 The output image can either be a heatmap on an empty page (overlay = 0) or be saved as an overlay from the original frame (overlay = 1)
 
