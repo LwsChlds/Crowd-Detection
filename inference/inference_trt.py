@@ -12,7 +12,7 @@ import pycuda.autoinit  # This is needed for initializing CUDA driver
 import tensorrt as trt
 import pycuda.driver as cuda
 # Import processing, customisation and publishing
-import dbscan as post
+import postprocessing as post
 import preprocessing as pre
 import configparser
 from mqtt import MQTTPublisher
