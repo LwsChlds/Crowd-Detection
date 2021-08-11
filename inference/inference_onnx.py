@@ -1,6 +1,6 @@
 import numpy as np
 import preprocessing as pre
-import dbscan as post
+import postprocessing as post
 import onnxruntime as rt
 import configparser
 
