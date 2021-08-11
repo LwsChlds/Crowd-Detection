@@ -30,9 +30,9 @@ And in deepstream it is:
 
     y' = net-scale-factor * ( x' - mean')
 
-The mean and std used in PyTorch are three values corresponding to the RGB values of the input image.
+The mean and std used in PyTorch are three values corresponding to the RGB values of the input image resulting in channel-wise normalisation.
 
-In the [config settings of deepstream](crowd_detector.txt), you can specify three values for offsets(mean); however, the value corresponding to the std is net-scale-factor which can only be a singular value.
+Unfortunately, deepstream does not currently support channel-wise normalisation. As a result, in the [config settings of deepstream](crowd_detector.txt), you can specify three values for offsets(mean); however, the value corresponding to the std is net-scale-factor which can only be a singular value.
 
 Additionally, the model is trained on input values between 0 and 1, which can be obtained by dividing the original RGB values by 225.
 
