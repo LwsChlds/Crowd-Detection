@@ -1,8 +1,8 @@
 from sklearn.cluster import DBSCAN
 import numpy as np
 import matplotlib.pyplot as plt
-​
-​
+
+
 def postprocess(prediction, epsilon, min_samples):
     LOG_PARA = 2550.0
     # store the x and y values of the pixels where a person is detected
@@ -13,21 +13,21 @@ def postprocess(prediction, epsilon, min_samples):
     if str(np.shape(detection)) == '(0,)':
         print("No detection was found in the image")
         return None, None
-​
+
     # Compute DBSCAN
     db = DBSCAN(eps=epsilon, min_samples=min_samples).fit(detection)
     labels = db.labels_
-​
+
     # Remove the noise
     range_max = len(detection)
     detection = np.array([detection[i] for i in range(0, range_max) if labels[i] != -1])
     labels = np.array([labels[i] for i in range(0, range_max) if labels[i] != -1])
-​
+
     # code used for printing the number of groups and corresponding detections from each image/frame:
     
     # no_clusters = len(np.unique(labels))    
     # no_noise = np.sum(np.array(labels) == -1, axis=0)
-​
+
     # print the values for each grouping
     # for i in range(no_clusters):
     #     print(str(i) + " = " + str(np.sum(np.array(labels) == i, axis=0)))
@@ -39,7 +39,7 @@ def postprocess(prediction, epsilon, min_samples):
         return None, None
     
     return detection, labels
-​
+
 def saveIMG(detection, labels, outputIMG, Length, Height, input, overlay):
     # Generate scatter plot
     # colour_list = np.array(['green', 'blue', 'red', 'yellow',  'orange',  'magenta', 'cyan', 'purple', 'black'])
@@ -61,4 +61,4 @@ def saveIMG(detection, labels, outputIMG, Length, Height, input, overlay):
                         hspace=0, wspace=0)
     plt.savefig(outputIMG)
     plt.clf()
-​
+
