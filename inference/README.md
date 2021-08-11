@@ -5,7 +5,7 @@
 ## Running using TensorRT
 TensorRT is used to optimise model inference throughput on NVIDIA edge computing devices.
 
-You can find the main inference code in [trt.py](trt.py) but the [preprocessing](preprocessing.py) and [postprocessing](dbscan.py) are seperated into modules.
+You can find the main inference code in [inference_trt.py](inference_trt.py) but the [preprocessing](preprocessing.py) and [postprocessing](postprocessing.py) are seperated into modules.
 
 The preprocessing follows the same method as the original PyTorch model without the need of using Torchvision. Each input pixel RGB value is put into the following equation:
 
@@ -33,9 +33,9 @@ All inputs and changeable config values are found in [config.txt](config.txt)
 
 ## Running using onnxRuntime
 
-The same model can also be run using onnxRuntime using [infernece.py](infernece.py)
+The same model can also be run using onnxRuntime using [inference_onnx.py](inference_onnx.py)
 
-It uses the same [preprocessing](preprocessing.py) and [postprocessing](dbscan.py)
+It uses the same [preprocessing](preprocessing.py) and [postprocessing](postprocessing.py)
 
 To run, use
 
