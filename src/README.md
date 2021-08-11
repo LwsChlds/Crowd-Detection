@@ -49,4 +49,4 @@ The 1080x1960 model produces: ![](1080x1960.png)
 
 And the 540x960 model produces: ![](heatmap.png)
 
-The larger model is noticeably more accurate at detections, especially at the area with a dense group. However, it is four times the size, so it takes longer to process per image. Additionally, it requires a large GPU memory to convert the larger model, and most computers will crash.
+The larger model is noticeably more accurate at detections, especially at the area with a dense group. However, it is four times the size, so it takes longer to process per image. Additionally, it requires a large GPU memory to convert the larger model.
