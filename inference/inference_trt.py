@@ -77,7 +77,7 @@ def inference_trt(input, model_path, output, Length, Height, epsilon, min_sample
     :param outputTF: (int) if output heatmap images should be produced or not
     :param overlay: (int) if output heatmap should be overlayed onto the original frame
     """
-   print("Opening onnx engine into trt...")
+    print("Opening onnx engine into trt...")
     trt_logger = trt.Logger(trt.Logger.INFO)
     # load plugins
     trt.init_libnvinfer_plugins(trt_logger, '')
@@ -216,7 +216,6 @@ def main():
     else:
         overlay = 0
     
-​
     inference_trt(mediaIn, onnxEngine, outputIMG, Length, Height, epsilon, min_samples, outputFile, interval, outputTF, overlay)
     print("Completed inference")
     
