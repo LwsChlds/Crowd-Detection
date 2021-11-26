@@ -81,3 +81,5 @@ It produces:
 With overlay set to 1, it produces:
 
 ![](overlayOut.jpg)
+
+![Video Output Example](stiched_video.mp4)
