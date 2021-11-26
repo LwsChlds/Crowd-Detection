@@ -5,6 +5,8 @@
 
 ![](allMaps.jpg)
 
+![Video Example](inference/stiched_video.mp4)
+
 ### The final model running in TensorRT
 The [inference file](inference) contains and documents the final method used involving TensorRT ad postprocessing using dbscan
 
